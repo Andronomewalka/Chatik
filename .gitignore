@@ -5,6 +5,7 @@
 *.sln.docstates
 bin
 obj
+Screenshots
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
