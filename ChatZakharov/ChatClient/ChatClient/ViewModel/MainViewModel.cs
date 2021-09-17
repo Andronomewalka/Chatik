@@ -16,7 +16,7 @@ namespace ChatClient.ViewModel
     {
         IFrameNavigationService navigation;
 
-        private string title = "Simple Chat";
+        private string title = "Chatik";
         public string Title
         {
             get => title;
