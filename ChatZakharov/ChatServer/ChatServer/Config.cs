@@ -15,6 +15,7 @@ namespace ChatServer
         public int ConnectionTimeoutMs { get; private set; }
         public string ConnectionString { get; private set; }
         public bool FirstRun { get; private set; }
+        public string DbName { get; private set; }
 
         private static Config config;
 
@@ -52,12 +53,9 @@ namespace ChatServer
                         {
                             string connectionSubstring = connectionString.Substring(connectionString.IndexOf("Server"));
                             connectionSubstring = connectionSubstring.Remove(connectionSubstring.Length - 1);
-                            if (config.FirstRun && connectionSubstring.Contains("Database"))
-                            {
-                                connectionSubstring = connectionSubstring.Substring(0, connectionSubstring.IndexOf("Database"));
-
-                            }
                             config.ConnectionString = connectionSubstring;
+                            config.DbName = connectionSubstring.Substring(connectionSubstring.IndexOf("Database") + "Database".Length + 1)
+                                                               .Trim(')');
                         }
                     }
                 }
@@ -81,18 +79,18 @@ namespace ChatServer
             {
                 using (StreamWriter writer = new StreamWriter(File.Open("config.ini", FileMode.Open)))
                 {
-                    writer.WriteLine($"internal_ip={config.Ip}");
-                    writer.WriteLine($"port={config.Port}");
-                    writer.WriteLine($"connection_timeout_ms={config.ConnectionTimeoutMs}");
+                    writer.WriteLine($"internal_ip={Ip}");
+                    writer.WriteLine($"port={Port}");
+                    writer.WriteLine($"connection_timeout_ms={ConnectionTimeoutMs}");
                     writer.WriteLine($"first_run=False");
-                    writer.WriteLine($"db_connectionString=({config.ConnectionString}{(config.ConnectionString.EndsWith("Database=SimpleChat;") ? "" : "Database=SimpleChat;")})");
+                    writer.WriteLine($"db_connectionString=({ConnectionString})");
                     writer.WriteLine("");
                     writer.WriteLine("// Configure db_connectionString before first run;");
                     writer.WriteLine("");
                     writer.WriteLine("// IMPORTANT first_run will drop and recreate chat database if it sets to true.");
                     writer.WriteLine("// After success db creation it will automatically switch to false;");
                 }
-                config.ConnectionString = $"{config.ConnectionString}Database=Chat;";
+                config.ConnectionString = $"{ConnectionString}Database=Chat;";
                 config.FirstRun = false;
             }
             catch (Exception e)
@@ -127,7 +125,7 @@ namespace ChatServer
             Ip = IPAddress.Parse("127.0.0.1");
             Port = 1815;
             ConnectionTimeoutMs = 5000;
-            ConnectionString = "Server=127.0.0.1;Port=9999;User Id=postgres;Password=password;";
+            ConnectionString = "Server=127.0.0.1;Port=5432;User Id=postgres;Password=password;Database=Chatik";
             FirstRun = false;
         }
     }

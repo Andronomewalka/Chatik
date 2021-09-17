@@ -14,8 +14,8 @@
     <StackPanel        
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
-        Width="400">
-        <StackPanel Width="200">
+        MinWidth="300">
+        <StackPanel>
 
         <TextBox
             Name="UsernameTextBox"

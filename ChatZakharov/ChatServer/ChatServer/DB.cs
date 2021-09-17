@@ -1,9 +1,7 @@
 ﻿using Npgsql;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TransitPackage;
 
@@ -14,33 +12,33 @@ namespace ChatServer
         private static NpgsqlConnection conn;
         private DB() { }
 
-        public static async Task<bool> CreateDB()
+        public static async Task<bool> CreateDB(string dbName)
         {
             try
             {
-                using (var cmd = new NpgsqlCommand("UPDATE pg_database SET datallowconn = 'false' WHERE datname = 'SimpleChat';", conn))
+                using (var cmd = new NpgsqlCommand($"UPDATE pg_database SET datallowconn = 'false' WHERE datname = '{dbName}';", conn))
                 {
                     await cmd.ExecuteNonQueryAsync();
                 }
 
-                using (var cmd = new NpgsqlCommand(@"SELECT pg_terminate_backend(pg_stat_activity.pid)
+                using (var cmd = new NpgsqlCommand(@$"SELECT pg_terminate_backend(pg_stat_activity.pid)
                                                      FROM pg_stat_activity
-                                                     WHERE pg_stat_activity.datname = 'SimpleChat' AND pid<> pg_backend_pid();", conn))
+                                                     WHERE pg_stat_activity.datname = '{dbName}' AND pid<> pg_backend_pid();", conn))
                 {
                     await cmd.ExecuteNonQueryAsync();
                 }
 
-                using (var cmd = new NpgsqlCommand("DROP DATABASE IF EXISTS \"SimpleChat\"", conn))
+                using (var cmd = new NpgsqlCommand($"DROP DATABASE IF EXISTS \"{dbName}\"", conn))
                 {
                     await cmd.ExecuteNonQueryAsync();
                 }
 
-                using (var cmd = new NpgsqlCommand("CREATE DATABASE \"SimpleChat\"", conn))
+                using (var cmd = new NpgsqlCommand($"CREATE DATABASE \"{dbName}\"", conn))
                 {
                     await cmd.ExecuteNonQueryAsync();
                 }
 
-                using (var cmd = new NpgsqlCommand("SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower('SimpleChat');", conn))
+                using (var cmd = new NpgsqlCommand($"SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower('{dbName}');", conn))
                 {
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
@@ -49,9 +47,8 @@ namespace ChatServer
                     }
                 }
 
-                string newConnectionString = Config.GetConfig().ConnectionString + "Database=SimpleChat;";
                 conn.Close();
-                conn.ConnectionString = newConnectionString;
+                conn.ConnectionString = Config.GetConfig().ConnectionString;
                 conn.Open();
 
                 using (var cmd = new NpgsqlCommand(@"CREATE TABLE public.rooms(
@@ -114,10 +111,10 @@ namespace ChatServer
             }
         }
 
-        public static void Initialize(string connectionString)
+        public static void Initialize(string connectionString, bool firstRun)
         {
             conn = new NpgsqlConnection();
-            conn.ConnectionString = connectionString;
+            conn.ConnectionString = firstRun ? connectionString.Substring(0, connectionString.IndexOf("Database")) : connectionString;
             conn.Open();
         }
         

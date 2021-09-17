@@ -84,9 +84,9 @@ namespace ChatClient.ViewModel
         private void TitleChange()
         {
             if (ConnectionState == ClientState.LoggedIn)
-                Title = "Simple Chat - " + MainModel.Client.Name;
+                Title = "Chatik - " + MainModel.Client.Name;
             else
-                Title = "Simple Chat";
+                Title = "Chatik";
         }
 
         #region Commands

@@ -14,6 +14,7 @@ namespace ChatServer
 
         public int ConnectedIpConnectionCheckTimerInterval { get; private set; }
 
+        Config config;
         TcpListener listener;
         Dictionary<string, List<Client>> roomUsersDictionary;
         List<Client> connectedIp;
@@ -22,13 +23,25 @@ namespace ChatServer
 
         public Server(Config config)
         {
+            this.config = config;
             listener = new TcpListener(config.Ip, config.Port);
             listener.Server.ReceiveTimeout = config.ConnectionTimeoutMs;
             listener.Server.SendTimeout = config.ConnectionTimeoutMs;
-            DB.Initialize(config.ConnectionString);
+            ConnectedIpConnectionCheckTimerInterval = Config.GetConfig().ConnectionTimeoutMs + 2000;
+            roomUsersDictionary = new Dictionary<string, List<Client>>();
+            connectedIp = new List<Client>();
+            connectedIpChanged = new Mutex();
+            connectedIpConnectionCheckTimer = new System.Timers.Timer();
+            connectedIpConnectionCheckTimer.Elapsed += ConnectedIpConnectionCheck;
+            connectedIpConnectionCheckTimer.Interval = ConnectedIpConnectionCheckTimerInterval;
+        }
+
+        private async Task CheckDb()
+        {
+            DB.Initialize(config.ConnectionString, config.FirstRun);
             if (config.FirstRun)
             {
-                if (DB.CreateDB().Result)
+                if (await DB.CreateDB(config.DbName))
                 {
                     config.SetConnectionString();
                     Console.WriteLine("Database successfully created");
@@ -39,17 +52,11 @@ namespace ChatServer
                     return;
                 }
             }
-            ConnectedIpConnectionCheckTimerInterval = Config.GetConfig().ConnectionTimeoutMs + 2000;
-            roomUsersDictionary = new Dictionary<string, List<Client>>();
-            connectedIp = new List<Client>();
-            connectedIpChanged = new Mutex();
-            connectedIpConnectionCheckTimer = new System.Timers.Timer();
-            connectedIpConnectionCheckTimer.Elapsed += ConnectedIpConnectionCheck;
-            connectedIpConnectionCheckTimer.Interval = ConnectedIpConnectionCheckTimerInterval;
         }
 
         public async Task Start()
         {
+            await CheckDb();
             listener.Start();
             connectedIpConnectionCheckTimer.Start();
             Console.WriteLine("Server is up");
