@@ -3,8 +3,10 @@
 client: WPF MVVM chat with AES RSA encryption based on sockets;<br>
 server: just console app;
 
-![Chatik_1.jpg](Screenshots/Chatik_1.jpg)<br>
-![Chatik_2.jpg](Screenshots/Chatik_2.jpg)<br>
+![Chatik_1.jpg](Screenshots/Chatik_1.jpg)
+
+![Chatik_2.jpg](Screenshots/Chatik_2.jpg)
+
 ![Chatik_3.jpg](Screenshots/Chatik_3.jpg)<br>
 ![Chatik_4.jpg](Screenshots/Chatik_4.jpg)<br>
 ![Chatik_5.jpg](Screenshots/Chatik_5.jpg)<br>
